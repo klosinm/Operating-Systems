@@ -19,28 +19,67 @@ run: ./a.out 1 [num value of how big you want ring communicaiton]
 #include <sys/resource.h>
 #include <unistd.h>
 
-int line[100]; //array for input
-char **comms;   //storage of the arguments
+#define MAX 1024
 
 int main(int argc, char *argv[])
 {
+    char str[MAX]; //user input
+    char *words[MAX]; //parsing user input
+    int i = 0; //integer to help with parsing user input
 
-    int processStartVal = atoi(argv[1]); //start value for token ring, always 1
-    int processEndVal = atoi(argv[2]); //end value of token ring
-    char wordOfDay = *argv[3]; //word that is being passed around
-    int processWordGoesTo = atoi(argv[4]); //process value that word goes to
-
-    //making sure values are set correctly
-    if (processStartVal != 1)
+    /**************************************
+    * Get user input
+    ***************************************/
+    printf("Enter process ring lenth, process Word gets sent to, word: ");
+    fgets(str, MAX, stdin);
+   
+    //parse user input
+    char * ptr = strtok(str," ");
+    while (ptr != NULL)
     {
-        printf("Please make your start process value 1! \n");
-        exit(1);
+        words[i] = ptr;
+        //printf("input %i is: %s\n",i, words[i]);
+        ptr = strtok(NULL, " ");
+        i++;
     }
+    int processEndVal = atoi(words[0]);  //end value of token ring
+    int processWordGoesTo = atoi(words[1]); //token word is to go to
+    char* wordOfDay = words[2];           //word that is being passed around
+    
+    //making sure values are set correctly
     if (processEndVal == 0 || processWordGoesTo == 0){
         printf("Please make sure all numerical values are numbers! \n");
         exit(1);
     }
+    if(processWordGoesTo > processEndVal){
+        printf("Please make the location word goes to less than how long the ring is!\n");
+        exit(1);
+    }
+    
+    //confirm choices (not like you can change them)
+    printf("Token range 1 - %i, Word goes to token %i, Word is %s ", processEndVal, processWordGoesTo, wordOfDay);
+    printf("________________________________________________________\n "); //aesthetics~
 
-        printf(" Token range %i - %i, Word  %c, Word goes to token %i: \n ", processStartVal, processEndVal, wordOfDay, processWordGoesTo);
-        printf("________________________________________________________\n "); //aesthetics~
+    /**************************************
+    * Create x amount of pipes
+    ***************************************/
+
+    /*
+
+    //create x amount of pipes
+    int fd[2];
+    pid_t childpid;
+
+    pipe(fd);
+
+    if ((childpid = fork()) == -1)
+    {
+        perror("fork");
+        exit(1);
+    }
+    else{
+        printf("Wooo pipe! %d\n", getpid());
+    }
+
+    */
 }
