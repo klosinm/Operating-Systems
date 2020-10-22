@@ -18,68 +18,131 @@ run: ./a.out 1 [num value of how big you want ring communicaiton]
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
+#include<stdio.h>
+#include<unistd.h>
+
 
 #define MAX 1024
 
+
+void endSig(int); //ctrl c handler
+
 int main(int argc, char *argv[])
 {
-    char str[MAX]; //user input
-    char *words[MAX]; //parsing user input
-    int i = 0; //integer to help with parsing user input
-
-    /**************************************
-    * Get user input
-    ***************************************/
-    printf("Enter process ring lenth, process Word gets sent to, word: ");
-    fgets(str, MAX, stdin);
-   
-    //parse user input
-    char * ptr = strtok(str," ");
-    while (ptr != NULL)
-    {
-        words[i] = ptr;
-        //printf("input %i is: %s\n",i, words[i]);
-        ptr = strtok(NULL, " ");
-        i++;
-    }
-    int processEndVal = atoi(words[0]);  //end value of token ring
-    int processWordGoesTo = atoi(words[1]); //token word is to go to
-    char* wordOfDay = words[2];           //word that is being passed around
-    
-    //making sure values are set correctly
-    if (processEndVal == 0 || processWordGoesTo == 0){
-        printf("Please make sure all numerical values are numbers! \n");
-        exit(1);
-    }
-    if(processWordGoesTo > processEndVal){
-        printf("Please make the location word goes to less than how long the ring is!\n");
-        exit(1);
-    }
-    
-    //confirm choices (not like you can change them)
-    printf("Token range 1 - %i, Word goes to token %i, Word is %s ", processEndVal, processWordGoesTo, wordOfDay);
-    printf("________________________________________________________\n "); //aesthetics~
-
+ 
     /**************************************
     * Create x amount of pipes
     ***************************************/
 
-    /*
+    
+    int c1_wr;
+    int parent_pid = getpid();
+    int p1[2];
+    int p2[2];
 
-    //create x amount of pipes
-    int fd[2];
-    pid_t childpid;
+    char userWord[MAX];    //user word input
+    char ProcessLen[MAX];  //how long the ring process is
+    char ProcessWordGoesTo[MAX];  //which process is to recieve word
+    char readMessage[MAX];
 
-    pipe(fd);
 
-    if ((childpid = fork()) == -1)
+    //get message from user
+    printf("What is message? ");
+    fgets(userWord, MAX, stdin);
+    //get how long the token ring circle should be
+    printf("How many Processes? ");
+    fgets(ProcessLen, MAX, stdin);
+    int numProcess = atoi(ProcessLen);
+    //get which process the message needs to go to
+    printf("Where does message go? ");
+    fgets(ProcessWordGoesTo, MAX, stdin);
+    int ProcessDelivery= atoi(ProcessWordGoesTo);
+
+    //Test input
+    if (ProcessDelivery == 0 || numProcess == 0)
     {
-        perror("fork");
+        printf("Please make sure all numerical values are numbers! \n");
         exit(1);
     }
-    else{
-        printf("Wooo pipe! %d\n", getpid());
+    if (ProcessDelivery > numProcess)
+    {
+        printf("Please make the location word goes to less than how long the ring is!\n");
+        exit(1);
     }
 
-    */
+    pipe(p1);
+    c1_wr = dup(p1[1]);
+    printf("%d children\n", numProcess);
+    printf("Parent = %d\n", parent_pid);
+
+    //make n amount of children
+    for (int n = 0; n < numProcess; n++)
+    {
+        int pid;
+        pipe(p2);
+        //create a pipe
+        if (pipe(p2) < 0)
+        {
+            perror("Error creating pipe\n");
+            exit(1);
+        }
+
+        if ((pid = fork()) == 0)
+        {
+
+            printf("Process %2d (%d)-(PPID: %d): \n", n + 1, getpid(), getppid());
+            close(p1[1]);
+            close(p2[0]);
+
+            close(p1[0]);
+            close(p2[1]);
+            break;
+        }
+
+        close(p1[0]);
+        close(p1[1]);
+        p1[0] = p2[0];
+        p1[1] = p2[1];
+    }
+
+    while(1){
+    
+        //look at X Process, which needs to read from pipe and write to output pipe
+
+        /*if ((pid = fork()) == 0)
+        {
+            read(p1[0], readMessage, sizeof(readMessage));
+          //  printf("Process %2d (%d)- Reading from pipe -(PPID: %d): %s \n", n+1, getppid(), getpid(), readMessage);
+           }
+        else
+        { //Parent process
+
+          //  printf("  Process %2d (%d)- writing from pipe -(PPID: %d): %s \n", n+1, getppid(), getpid(), userWord);
+            write(p2[1], userWord, sizeof(userWord));
+      
+        }*/
+
+        //printf("Child %2d = %d\n", n + 1, pid);
+       // printf("p1[0] %d, p2[1] %d: ", p1[0], p2[1]);
+
+       
+    }
+
+
+
+    
+
 }
+/*
+//ends on ctrl c
+void endSig(int sigNum)
+{
+    if (pid != 0)
+    {
+        printf("^C received. Process %d shutting down.\n", getpid());
+        //free(data);
+    }
+    exit(0);
+
+}
+*/
