@@ -31,6 +31,7 @@ to run:
 
 void endSig(int);    //ctrl c handler
 typedef int Pipe[2]; //Pipe array
+void sigHandler(int); //to ^C out of program.
 
 int main(int argc, char *argv[])
 {
@@ -174,5 +175,18 @@ int main(int argc, char *argv[])
     /*
     End of program! 
     */
+    exit(0);
+
+
+
+}
+
+/* This function overrides each processe SIGINT signal for shut down. */
+void sigHandler(int sigNum)
+{
+
+    printf("\r ^C recieved. Process %d shutting down.\n", getpid());
+    /* free memory that was allocated for data struct */
+   
     exit(0);
 }
