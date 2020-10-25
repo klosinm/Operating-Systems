@@ -5,12 +5,12 @@ to emulate a form of network communication.
 name: Monica Klosin
 date: October 18, 2020
 
-in makefile.exe:
+in makeFile:
 gcc -Wall Token-Ring.c -o a.out
 ./a.out 
 
 to run:
-./makefile.exe
+make
 */
 
 #include <stdio.h>
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         printf("Please make sure all numerical values are numbers! \n");
         exit(1);
     }
-    if (ProcessDelivery > numProcess)
+    if (ProcessDelivery > (numProcess - 1))
     {
         printf("Please make the location word goes to less than how long the ring is!\n");
         exit(1);

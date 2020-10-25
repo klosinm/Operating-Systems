@@ -1,2 +1,2 @@
-gcc -Wall token-ring-complete.c -o a.out 
-	./a.out
+gcc -Wall token-ring-complete.c -o b.out 
+	./b.out

@@ -5,12 +5,12 @@ to emulate a form of network communication.
 name: Monica Klosin
 date: October 18, 2020
 
-in makefile.exe:
-gcc -Wall Token-Ring.c -o a.out
-./a.out 
+in makeBFile:
+gcc -Wall token-ring-complete.c -o b.out
+./b.out 
 
 to run:
-./makefile.exe
+./makeBFile
 */
 
 #include <stdio.h>
@@ -22,7 +22,9 @@ to run:
 #include <sys/resource.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <unistd.h>
+#include <sys/types.h>
+#include <signal.h>
+
 
 #define MAX 1024
 
@@ -31,11 +33,13 @@ to run:
 
 void endSig(int);    //ctrl c handler
 typedef int Pipe[2]; //Pipe array
-void sigHandler(int); //to ^C out of program.
+void endSig(int);
+//to ^C out of program.
 
 int main(int argc, char *argv[])
 {
 
+    signal(SIGINT, endSig); //signal handler
     int parent_pid = getpid(); //parent ID
     //int p1[2]; //pipe process 2
 
@@ -66,7 +70,7 @@ int main(int argc, char *argv[])
         printf("Please make sure all numerical values are numbers! \n");
         exit(1);
     }
-    if (ProcessDelivery > numProcess)
+    if (ProcessDelivery > (numProcess-1))
     {
         printf("Please make the location word goes to less than how long the ring is!\n");
         exit(1);
@@ -106,14 +110,13 @@ int main(int argc, char *argv[])
     {
         /** make child **/
         if ((pid = fork()) == 0)
-        {
+        {        
             //once child is created, break out of for loop to go to while loop to read/write
             break;
         }
         else
         {
             /**  parent process  **/
-
             /*indexing for child value, called it processNum but in 
             actualitiy it is the childProcess value*/
             processNum = n + 2;
@@ -126,24 +129,20 @@ int main(int argc, char *argv[])
         if (processNum == 1)
         {
             printf("---------------------------------------\n");
-
             write(pipes[1][WRITE], readMessage, sizeof(readMessage));
             printf("INITIAL Process %i (%d)-(PPID: %d) write message: %s\n", processNum, getpid(), getppid(), readMessage);
             read(pipes[0][READ], readMessage, sizeof(readMessage));
             printf("Process %i (%d)-(PPID:%d) read message: %s \n", processNum, getpid(), getppid(), readMessage);
-
         }
         /*find child that the message word is supposed to be delievered to
         once found, write "done!" in token vs the user input, and have "done!" read
         for the rest of the program. */
         else if (processNum == ProcessDelivery)
         {
-            //process 2, pipe[]
             read(pipes[processNum - 1][READ], readMessage, sizeof(readMessage));
             printf("Process %i (%d)-(PPID:%d) DELIEVERY! read message: %s \n", processNum, getpid(), getppid(), readMessage);
             write(pipes[processNum][WRITE], "done!", sizeof("done!"));
             printf("Process %i (%d)-(PPID:%d) write message: %s\n", processNum, getpid(), getppid(), "done!");
-
         }
         //other child processes
         else if (processNum < (numProcess - 1))
@@ -152,7 +151,6 @@ int main(int argc, char *argv[])
             printf("Process %i (%d)-(PPID:%d) read message: %s \n", processNum, getpid(), getppid(), readMessage);
             write(pipes[processNum][WRITE], readMessage, sizeof(readMessage));
             printf("Process %i (%d)-(PPID:%d) write message: %s\n", processNum, getpid(), getppid(), readMessage);
-
         }
         //last process
         else if (processNum == (numProcess - 1))
@@ -160,7 +158,7 @@ int main(int argc, char *argv[])
             read(pipes[processNum - 1][READ], readMessage, sizeof(readMessage));
             printf("Process %i (%d)-(PPID:%d) read message: %s \n", processNum, getpid(), getppid(), readMessage);
             write(pipes[0][WRITE], readMessage, sizeof(readMessage));
-            printf("Process %i (%d)-(PPID:%d) write message: %s\n", processNum, getpid(), getppid(), readMessage);
+            printf("Process %i (%d)-(PPID:%d) write message: %s\n", processNum, getpid(), getppid(), readMessage);           
         }
 
         //format output to have space between processes
@@ -169,24 +167,18 @@ int main(int argc, char *argv[])
         sleep(1);
     }
 
-    
-    //control C to exit program
-
-    /*
-    End of program! 
-    */
-    exit(0);
-
-
-
 }
 
-/* This function overrides each processe SIGINT signal for shut down. */
-void sigHandler(int sigNum)
+//ends on ^C
+void endSig(int sigNum)
 {
-
+    sleep(1);
+    //destroy child process
+    kill(getpid(), SIGINT);
     printf("\r ^C recieved. Process %d shutting down.\n", getpid());
-    /* free memory that was allocated for data struct */
-   
-    exit(0);
+    exit(0);   
 }
+
+/*
+    End of program! 
+*/
