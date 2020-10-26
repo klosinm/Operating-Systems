@@ -5,9 +5,9 @@ to emulate a form of network communication.
 name: Monica Klosin
 date: October 18, 2020
 
-in makeFile:
-gcc -Wall Token-Ring.c -o a.out
-./a.out 
+in Makefile:
+run:
+    ./a.out 
 
 to run:
 make
@@ -18,6 +18,7 @@ make
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>

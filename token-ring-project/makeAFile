@@ -1,1 +1,0 @@
-gcc -Wall Token-Ring.c -o a.out

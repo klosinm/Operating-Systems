@@ -25,23 +25,20 @@ to run:
 #include <sys/types.h>
 #include <signal.h>
 
-
 #define MAX 1024
-
 #define READ 0
 #define WRITE 1
 
 void endSig(int);    //ctrl c handler
 typedef int Pipe[2]; //Pipe array
-void endSig(int);
-//to ^C out of program.
+void endSig(int); //to ^C out of program.
 
 int main(int argc, char *argv[])
 {
 
     signal(SIGINT, endSig); //signal handler
     int parent_pid = getpid(); //parent ID
-    //int p1[2]; //pipe process 2
+    int pid; // child ID
 
     char userWord[MAX];          //user word input
     char ProcessLen[MAX];        //how long the ring process is
@@ -82,15 +79,12 @@ int main(int argc, char *argv[])
     //indicate the parent ID
     printf("Parent = %d\n", parent_pid);
 
-    // Create pipes array.
-    Pipe pipes[numProcess + 1];
-
-    // child id
-    int pid;
-
     /**************************************
     * Create pipes
     ***************************************/
+
+    // Create pipes array.
+    Pipe pipes[numProcess + 1];
 
     for (int n = 0; n <= numProcess - 2; n++)
     {
@@ -111,7 +105,8 @@ int main(int argc, char *argv[])
         /** make child **/
         if ((pid = fork()) == 0)
         {        
-            //once child is created, break out of for loop to go to while loop to read/write
+            /*once child is created, break out of for loop to go 
+            to while loop to read/write */
             break;
         }
         else
@@ -122,6 +117,10 @@ int main(int argc, char *argv[])
             processNum = n + 2;
         }
     }
+
+    /**************************************
+    * Token Ring loop 
+    ***************************************/
 
     while (1)
     {
@@ -152,7 +151,7 @@ int main(int argc, char *argv[])
             write(pipes[processNum][WRITE], readMessage, sizeof(readMessage));
             printf("Process %i (%d)-(PPID:%d) write message: %s\n", processNum, getpid(), getppid(), readMessage);
         }
-        //last process
+        //last process, write to initial process
         else if (processNum == (numProcess - 1))
         {
             read(pipes[processNum - 1][READ], readMessage, sizeof(readMessage));
@@ -161,24 +160,18 @@ int main(int argc, char *argv[])
             printf("Process %i (%d)-(PPID:%d) write message: %s\n", processNum, getpid(), getppid(), readMessage);           
         }
 
-        //format output to have space between processes
-        printf(" \n");
-        // for dramatic effect
-        sleep(1);
+        printf(" \n"); //format output to have space between processes
+        sleep(1); // to pace loop tempo
     }
-
 }
 
-//ends on ^C
+/**************************************
+* End program via ^C
+***************************************/
 void endSig(int sigNum)
 {
-    sleep(1);
-    //destroy child process
-    kill(getpid(), SIGINT);
+    sleep(1);               // for dramatic effect
+    kill(getpid(), SIGINT); //destroy child process
     printf("\r ^C recieved. Process %d shutting down.\n", getpid());
     exit(0);   
 }
-
-/*
-    End of program! 
-*/
