@@ -4,17 +4,20 @@
 # 11/12/2020
 #
 import time
-import numpy as np
-
 
 class Detection(object):
 
-    f = open("scenario-2.txt", "r")  # get file
+    f = open("scenario-1.txt", "r")  # get file
+    my_file = []  # read in raw data
     initial_input_array = []  # inital array input
     input_array = []  # array to hold data from file
+    element = []  #remove new line
+    i = 0  #guess star integer
+    currentStep = []  # step in graph
+    nodeHolder = [] #holds the processes w/their held resources
+   
 
     # read in raw data into array
-
     with f as my_file:
         initial_input_array = my_file.readlines()
 
@@ -25,52 +28,37 @@ class Detection(object):
     # Get number of processes
     numProcesses = int(input_array.pop(0).split(' ')[0])
     print(str(numProcesses) + " processes.")
+
     # Get number of resources
     numResources = int(input_array.pop(0).split(' ')[0])
-    print(str(numResources) + " resources. \n")
-
-    # Get how many times there is a request (r)
-    # Get how many times there is a release (f)
-
-   
+    print(str(numResources) + " resources. ")
 
     #Know if a resource value is free or not
-    resourceFree = [True] * numResources
+    resourceHeld = [False] * numResources
 
-    #step in graph
-    currentStep = []
-    
-    # print(input_array)
+    #Initialize how many process arrays there will  be 
     for i in range(numProcesses):
-        print("P" + str(i) + ": \n")
-
-    for i in range(numResources):
-        print("R" + str(i) + ": " + str(resourceFree[i]))  
-
-    print("\n")
-
-
-  
-    # List all the steps in file
-
+        nodeHolder.append(["P" + str(i)])
+    
     for i in range(len(input_array)):
-        # print(input_array[i])
+        print("__________________________\n")
         currentStep = input_array[i].split(" ")
-        # print(inputFirst)
         time.sleep(1)
+
+        #if step is requesting
         if (currentStep[0] == "r"):
-            print("P" + currentStep[1] + " -> R" + currentStep[2])  # " now owns R"
-            resourceFree[int(currentStep[2])] = False
-            #print("R" + currentStep[2] + " is owned") 
-        if (currentStep[0] == "f"):
-            print("P" + currentStep[1] + " -X> R" + currentStep[2])  # " frees R"
-            resourceFree[int(currentStep[2])] = True
-            #print("R" + currentStep[2] + " is free")
+            print("Step " + str(i+1) + "/" + str(len(input_array))  + " | P" + currentStep[1] + " -> R" + currentStep[2])
+            resourceHeld[int(currentStep[2])] = True
+            nodeHolder[int(currentStep[1])].append(currentStep[2])
           
+        #If step is free
+        if (currentStep[0] == "f"):
+            print("Step " + str(i+1) + "/" + str(len(input_array)) + " | P" + currentStep[1] + " X R" + currentStep[2])  # " frees R"
+            resourceHeld[int(currentStep[2])] = False
+            nodeHolder[int(currentStep[1])].remove(currentStep[2])
 
-    print(resourceFree)
-
-
-
-# loop through each step, have a delay
-# show results
+        #print out the current status 
+        for i in range(numProcesses):
+            print(nodeHolder[i])
+        for i in range(numResources):
+            print("R" + str(i) + ": " + str(resourceHeld[i]))
