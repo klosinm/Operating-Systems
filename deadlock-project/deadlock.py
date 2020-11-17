@@ -5,124 +5,211 @@
 #
 import time
 import re
+import numpy
 
 class Detection(object):
 
-    f = open("scenario-3.txt", "r")  # get file
     my_file = []  # read in raw data
-    initial_input_array = []  # inital array input
+    initial_input_array = []  # read in raw data 2
     input_array = []  # array to hold data from file
-    element = []  #remove new line
     i = 0  #guest star integer
     x = 0  #guest star integer
     
-    currentStep = []  # step in graph
-    processHolder = []  # holds the processes w/their held resources
-    resourcesPWaiting = []  #holds the resources P#ID waits for
-    resourceWanted = []  #Holds resources wanting to be held by P
     
-    requestType = []  #holds if the step in program is a "r" or "f"
-    currentProcess = []  #hold value of current process in program
-    currentResource = []  #hold value of current resource in program
-    stepsInProgram = [] #hold steps taken in program
+    processHolder = []  # holds the process w/their held resources
+                        #allocation matrix
+    resourceWanted = []  #Holds resources and PID that request use
+                         #request matrix 
     
-
+    currentStep = []  # hold value of request type, PID, and RID
+    requestType = []  #holds request type; "r" or "f"
+    currentProcess = []  #hold value of current process 
+    currentResource = []  #hold value of current resource
+    stepsInProgram = []  #hold direction, P -> R or R -> P, in program
+    
+    #deadlock
+    resourceR = []  # amount of each resource available, will be a vector holding 1's
+    V = []  # amount of each resource currently avaialble
+    tally = 0  # tally if Process can be run
+    
     # read in raw data into array
+    f = open("scenario-2.txt", "r")  # get file
     with f as my_file:
         initial_input_array = my_file.readlines()
-
+        
     # remove '\n' from array
-    for element in initial_input_array:
-        input_array.append(element.strip())
+    for x in initial_input_array:
+        input_array.append(x.strip())
 
-    # Get number of processes
+    #-------------
+    # PROCESSES
+    #-------------
+    # Get num of processes
     numProcesses = int(input_array.pop(0).split(' ')[0])
     print(str(numProcesses) + " processes.")
 
-    # Get number of resources
-    numResources = int(input_array.pop(0).split(' ')[0])
-    print(str(numResources) + " resources. ")
-
-    #Know if a resource value is free or not
-    resourceHeld = [False] * numResources
-
-    #Initialize how many process arrays there will  be
-    #is what is outputed to terminal to show status of P
+    #Initialize num of process arrays 
+    #output P and owned RIDs
     for i in range(numProcesses):
         processHolder.append(["P" + str(i)])
 
-    #Initialize how many process waiting arrays there will  be
-    #Holds the resources P desire
-    for i in range(numProcesses):
-        resourcesPWaiting.append(["P" + str(i)])
+    #-------------
+    # RESOURCES
+    #-------------
+    # Get num of resources
+    numResources = int(input_array.pop(0).split(' ')[0])
+    print(str(numResources) + " resources. ")
 
-    #Know if a resource value is wanted or not
+    #Bool if resource value is held by a P
+    resourceHeld = [False] * numResources
+
+    #Array of PIDS requesting a currenlty owned R
     for i in range(numResources):
         resourceWanted.append([str(i)])
+        resourceR.append(1)
+        V.append([1])
 
 
+    #-------------
+    # Deadlock set up
+    #-------------
 
-
+    claimMatrix = numpy.zeros((numProcesses, numResources))
+    allocationMatrix = numpy.zeros((numProcesses, numResources))
 
     for i in range(len(input_array)):
+        currentStep = input_array[i].split(" ")
+        requestType = currentStep[0] # "r" or "f"
+        currentProcess = int(currentStep[1]) #PID
+        currentResource = int(currentStep[2]) #RID
+
+        if (requestType == "r"):
+            claimMatrix[currentProcess][currentResource] = 1
+
+        allocationMatrix[currentProcess][currentResource] = 0
+
+    #-------------
+    # Going Step by Step through input
+    #-------------
+    for i in range(len(input_array)):
         print("__________________________\n")
+        #dramatic effect
         time.sleep(1)
+        #Tell step in program so far
         print("Step " + str(i + 1) + "/" + str(len(input_array)))
         currentStep = input_array[i].split(" ")
-        requestType = currentStep[0]
-        currentProcess = currentStep[1]
-        currentResource = currentStep[2]
+        requestType = currentStep[0] # "r" or "f"
+        currentProcess = currentStep[1] #PID
+        currentResource = currentStep[2] #RID
         
- 
-       
         #if process is requesting
         if (requestType == "r"):
         
-            #check if resource is free
+            #check if RID is Held
             if (resourceHeld[int(currentResource)] == False):
-                print("R" + currentResource + " owned by P" + currentProcess)
-                resourceHeld[int(currentResource)] = True
-                processHolder[int(currentProcess)].append("R" + str(currentResource))
+                #Since RID is free, PID owns it
+                allocationMatrix[int(currentStep[1])][int(currentStep[2])] = 1
 
+                print("R" + currentResource + " owned by P" + currentProcess)
+                #RID is now held
+                resourceHeld[int(currentResource)] = True
+                #add RID to PID's array
+                processHolder[int(currentProcess)].append("R" + str(currentResource))
+                # R -> P
                 stepsInProgram.append("R" + str(currentResource))
                 stepsInProgram.append( "P" + str(currentProcess))
             else:
+                #Since RID is held by another process,
                 print("P" + currentProcess + " requests R" + currentResource)
-                #Share that resource is wanted, Put resource in P ID waiting array
+                # Put PID in resourceWanted array to request access to RID
                 resourceWanted[int(currentResource)].append(str(currentProcess))
-                resourcesPWaiting[int(currentProcess)].append("R" + str(currentResource))
-
+                #P -> R
                 stepsInProgram.append("P" + str(currentProcess))
                 stepsInProgram.append("R" + str(currentResource))
          
-        #print(resourceWanted)
-
-        #If step is freeing
+        #If process is freeing
         if (requestType == "f"):
-            print( "P" + currentProcess + " frees R" + currentResource) 
+            print("P" + currentProcess + " frees R" + currentResource)
+            #RID is no longer held
+            allocationMatrix[int(currentStep[1])][int(currentStep[2])] = 0
             resourceHeld[int(currentResource)] = False
+            #remove RID from PID's array
             processHolder[int(currentProcess)].remove("R" + str(currentResource))
 
-            #check if resource is wanted by any other P
+            #check if RID is wanted by another PID
             if(len(resourceWanted[int(currentResource)]) > 1):
-                
+                #first value in this 2D array is the RID, which is why x = [RID][1]
+                # x = holds the PID requesting access to RID
                 x = resourceWanted[int(currentResource)][1]
+                #Add RID to PID array
                 processHolder[int(x)].append("R" + str(currentResource))
                 print("R" + currentResource + " now owned by P" + x)
-                resourceWanted[int(currentResource)].remove(str(x))                  
+                #Remove PID from resourceWanted array
+                resourceWanted[int(currentResource)].remove(str(x))
+                #RID is now held
+                resourceHeld[int(currentResource)] = True
 
-        #print out the current status
+        #-------------
+        # current status of program
+        #-------------
         print("\n")
         for i in range(numProcesses):
+            # PID's and held RID's
             print(processHolder[i])
+
+        print("_ _ _ _ _\n")
+
         for i in range(numResources):
-            print("R" + str(i) + ": " + str(resourceHeld[i]))
+            #boolean if R is held or not
+            print("R" + str(i) + " held: " + str(resourceHeld[i]))
+            #list of PID's requesting RID
+            print(str(resourceWanted[i][1:]))
+
+
+        #-------------
+        # Detect Deadlock using Banker’s algorithm 
+        #-------------
+        # Creates a list containing 5 lists, each of 8 items, all set to 0
+
+        R = resourceR  # Total amount of each type of resource
+ 
+        #V: vector if amount of resources available 
+        for i in range(numResources):
+            if resourceHeld[i] == True:
+                V[i] = 0
+            else:
+                V[i] = 1
+        
+
+        C = claimMatrix   # amount of each resource needed by each process(P -> R)
+        A = allocationMatrix  # amount of each resource held by each process (P <- R)
+        N = C - A #Need
+        #print("C: \n", C)
+        #print("A: \n", A)
+        print("N: \n", N)
+        print("V: \n", V)
+    
+
+        #P > V True for ALL P, then  deadlock
+        for i in range(numProcesses):
+            for y in range(numResources):
+                if (N[i][y] > V[y]):
+                    tally += 1
+                    break
+        
+        print(tally)
+
+
+    
+
+
+
 
 
 
     def cycle(self):
         for i in range(len(input_array)):
-            print("__________________________\n")
+            print("__________________________")
         
             print("Step " + str(i + 1) + "/" + str(len(input_array)))
             currentStep = input_array[i].split(" ")
