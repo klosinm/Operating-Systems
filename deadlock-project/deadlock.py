@@ -6,6 +6,7 @@
 import time
 import re
 import numpy
+import networkx as nx
 
 class Detection(object):
 
@@ -17,9 +18,7 @@ class Detection(object):
     
     
     processHolder = []  # holds the process w/their held resources
-                        #allocation matrix
     resourceWanted = []  #Holds resources and PID that request use
-                         #request matrix 
     
     currentStep = []  # hold value of request type, PID, and RID
     requestType = []  #holds request type; "r" or "f"
@@ -28,9 +27,10 @@ class Detection(object):
     stepsInProgram = []  #hold direction, P -> R or R -> P, in program
     
     #deadlock
-    resourceR = []  # amount of each resource available, will be a vector holding 1's
-    V = []  # amount of each resource currently avaialble
-    tally = 0  # tally if Process can be run
+    V = []  # amount of each resource currently avaialble 
+    edges = []  #edges holding which resource is pointing to what
+    deadlock = 0 #holds #cycles detected
+
     
     # read in raw data into array
     f = open("scenario-2.txt", "r")  # get file
@@ -66,17 +66,14 @@ class Detection(object):
     #Array of PIDS requesting a currenlty owned R
     for i in range(numResources):
         resourceWanted.append([str(i)])
-        resourceR.append(1)
         V.append([1])
 
-
     #-------------
-    # Deadlock set up
+    # Deadlock prediction set up
     #-------------
 
     claimMatrix = numpy.zeros((numProcesses, numResources))
     allocationMatrix = numpy.zeros((numProcesses, numResources))
-
     for i in range(len(input_array)):
         currentStep = input_array[i].split(" ")
         requestType = currentStep[0] # "r" or "f"
@@ -85,9 +82,8 @@ class Detection(object):
 
         if (requestType == "r"):
             claimMatrix[currentProcess][currentResource] = 1
-
-        allocationMatrix[currentProcess][currentResource] = 0
-
+        allocationMatrix[currentProcess][currentResource] = 0  #R -> P
+       
     #-------------
     # Going Step by Step through input
     #-------------
@@ -111,11 +107,13 @@ class Detection(object):
                 allocationMatrix[int(currentStep[1])][int(currentStep[2])] = 1
 
                 print("R" + currentResource + " owned by P" + currentProcess)
+                
                 #RID is now held
                 resourceHeld[int(currentResource)] = True
                 #add RID to PID's array
                 processHolder[int(currentProcess)].append("R" + str(currentResource))
                 # R -> P
+                edges.append((f"R{currentResource}", f"P{currentProcess}"))
                 stepsInProgram.append("R" + str(currentResource))
                 stepsInProgram.append( "P" + str(currentProcess))
             else:
@@ -124,14 +122,16 @@ class Detection(object):
                 # Put PID in resourceWanted array to request access to RID
                 resourceWanted[int(currentResource)].append(str(currentProcess))
                 #P -> R
+                edges.append((f"P{currentProcess}", f"R{currentResource}"))
                 stepsInProgram.append("P" + str(currentProcess))
                 stepsInProgram.append("R" + str(currentResource))
          
         #If process is freeing
         if (requestType == "f"):
+            #P -x-> R
+            #edges.remove("P" + currentProcess + ", R" + currentResource)
             print("P" + currentProcess + " frees R" + currentResource)
             #RID is no longer held
-            allocationMatrix[int(currentStep[1])][int(currentStep[2])] = 0
             resourceHeld[int(currentResource)] = False
             #remove RID from PID's array
             processHolder[int(currentProcess)].remove("R" + str(currentResource))
@@ -167,59 +167,45 @@ class Detection(object):
 
 
         #-------------
-        # Detect Deadlock using Banker’s algorithm 
+        # Detect Deadlock in advance using Banker’s algorithm 
         #-------------
-        # Creates a list containing 5 lists, each of 8 items, all set to 0
-
-        R = resourceR  # Total amount of each type of resource
  
-        #V: vector if amount of resources available 
+        #V: vector of amount of resources available for each R
         for i in range(numResources):
             if resourceHeld[i] == True:
                 V[i] = 0
             else:
-                V[i] = 1
-        
+                V[i] = 1 
 
         C = claimMatrix   # amount of each resource needed by each process(P -> R)
-        A = allocationMatrix  # amount of each resource held by each process (P <- R)
-        N = C - A #Need
-        #print("C: \n", C)
-        #print("A: \n", A)
-        print("N: \n", N)
-        print("V: \n", V)
-    
+        A = allocationMatrix  # amount of each resource held by each process
+        N = C - A  #resources Needed
 
-        #P > V True for ALL P, then  deadlock
+        tally = 0  # tally if Process can be run
+
+        #P > V True for ALL P, then deadlock
+        #if tally == num P, then ther will be deadlock
         for i in range(numProcesses):
             for y in range(numResources):
                 if (N[i][y] > V[y]):
                     tally += 1
                     break
         
-        print(tally)
+        #if (tally == numProcesses):
+            #print("There will be deadlock!")
+            #exit()
+        #print(tally)
 
+        #-------------
+        #Detecting Cycles for a directed graph 
+        #-------------
 
-    
-
-
-
-
-
-
-    def cycle(self):
-        for i in range(len(input_array)):
-            print("__________________________")
-        
-            print("Step " + str(i + 1) + "/" + str(len(input_array)))
-            currentStep = input_array[i].split(" ")
-            requestType = currentStep[0]
-            currentProcess = currentStep[1]
-            currentResource = currentStep[2]
-
-            nextStep = input_array[i+1].split(" ")
-            nextType = nextStep[0]
-            nextProcess = nextStep[1]
-            nextResource = nextStep[2]
-
-
+        G = nx.DiGraph(edges)
+        deadlock = (len(list(nx.simple_cycles(G))))
+        if (int(deadlock) > 0):
+           
+            print("_ _ _ _ _ _\n")
+            print("There is deadlock!")
+            print(list(nx.simple_cycles(G)))
+            print("\n_ _ _ _ _ _\n")
+            exit()
