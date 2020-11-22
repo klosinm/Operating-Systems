@@ -19,39 +19,60 @@ shape_map = []
 #Get all distinct node classes according to the node shape attribute
 #nodeShapes = set((aShape[1]["color"] for aShape in G.nodes(data=True)))
 
-
-
 def update(num, G, ax, layout):
+    ax.clear()
+
     currentStep = core.input_array[num].split(" ")
     requestType = currentStep[0]  # "r" or "f"
     currentProcess = (currentStep[1])  # PID
     currentResource = (currentStep[2])  # RID
-    print("Step" + str(num) + ": P" + currentProcess + " " + requestType + "'s R" + currentResource)
+    print(" Step" + str(num+1) + ": P" + currentProcess + " " + str(core.verbalrequests[num]) + "'s R" + currentResource)
+ 
+    #print(core.steps[num])
     point = core.steps[num][0]
     point2 = core.steps[num][1]
-    if(requestType == "r" and core.resourceHeld[int(currentResource)] == False):
+
+    if(requestType == "r" and core.verbalrequests[num] == "owns"):
         G.add_edge(point, point2)
-        edge_color_map.append("red")
-    elif(requestType == "r" and core.resourceHeld[int(currentResource)] == True):
-        G.add_edge(point2, point)
-        edge_color_map.append("blue")
+        #print("in owns")
+        #edge_color_map.append("blue")
+    elif(requestType == "r" and core.verbalrequests[num] == "requests"):
+        G.add_edge(point, point2)
+       # print("in requests")
+        #edge_color_map.append("red")
     
 
-    if(requestType == "f" ):
+    if (requestType == "f"):
         G.remove_edge(point, point2)
+        if(num  < (len(core.input_array)-1)):
+            if (core.verbalrequests[num + 1] == "now owns"):
+                #print("in free ")
+                print(core.verbalrequests[num])
+                print(core.steps[num])
+          
+                #print("and own ")
+                print(core.verbalrequests[num + 1])
+                print(core.steps[num+1])
+
+                G.add_edge(core.steps[num + 1][0], core.steps[num + 1][1])
+                del core.verbalrequests[num+1: num + 2]
+                del core.steps[num + 1 : num + 2]
+          
+
+          
 
 
-    ax.clear()
 
-
+    ax.set_title("Deadlock Detection \n Step " + str(num + 1) + "/" + str(len(core.input_array)) + ": P" + str(currentProcess) + " " + core.verbalrequests[num] + "'s R" + str(currentResource), fontweight="bold")
+   
     nx.draw(G,
             with_labels=True,
             pos=layout,
             node_color=color_map,
-            edge_color=edge_color_map,
+            #edge_color=edge_color_map,
             node_shape="s",
             ax=ax)
-    ax.set_title("Deadlock Detection \n Step " + str(num + 1) + "/" + str(len(core.input_array)) + ": P" + str(currentProcess) + " " + requestType + "'s R" + str(currentResource), fontweight="bold")
+   
     #ax.set_title("Deadlock Detection \n Step {}/8: P0 requests and owns R0".format(num), fontweight="bold")
 
 
@@ -77,7 +98,7 @@ def simple_animation():
     layout = nx.circular_layout(G)
 
     ani = animation.FuncAnimation(
-        fig, update, frames=len(core.input_array), interval=1000, fargs=(G, ax, layout), repeat=False)
+        fig, update, frames=len(core.input_array), interval=2000, fargs=(G, ax, layout), repeat=False)
 
     plt.show()
 
