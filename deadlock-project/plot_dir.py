@@ -12,6 +12,8 @@ core = Detection
 color_map = []
 edge_color_map = []
 shape_map = []
+extraInfo = 0
+ 
 #pos = nx.get_node_attributes(G, 'pos')
 
 
@@ -20,6 +22,8 @@ shape_map = []
 #nodeShapes = set((aShape[1]["color"] for aShape in G.nodes(data=True)))
 
 def update(num, G, ax, layout):
+    global extraInfo
+    extraInfo = ""
     ax.clear()
 
     currentStep = core.input_array[num].split(" ")
@@ -34,36 +38,45 @@ def update(num, G, ax, layout):
 
     if(requestType == "r" and core.verbalrequests[num] == "owns"):
         G.add_edge(point, point2)
+        extraInfo = ""
         #print("in owns")
         #edge_color_map.append("blue")
     elif(requestType == "r" and core.verbalrequests[num] == "requests"):
         G.add_edge(point, point2)
+        extraInfo = ""
        # print("in requests")
         #edge_color_map.append("red")
     
 
     if (requestType == "f"):
+        #print("in free ")
+        print(core.verbalrequests[num])
+        print(core.steps[num])
         G.remove_edge(point, point2)
+
         if(num  < (len(core.input_array)-1)):
             if (core.verbalrequests[num + 1] == "now owns"):
-                #print("in free ")
-                print(core.verbalrequests[num])
-                print(core.steps[num])
-          
+                
+              
                 #print("and own ")
                 print(core.verbalrequests[num + 1])
                 print(core.steps[num+1])
-
+                G.remove_edge(core.steps[num + 1][1], core.steps[num + 1][0])
                 G.add_edge(core.steps[num + 1][0], core.steps[num + 1][1])
+                extraInfo = "\n " +  core.steps[num+1][1] + " now owns "  + core.steps[num+1][0]
                 del core.verbalrequests[num+1: num + 2]
                 del core.steps[num + 1 : num + 2]
-          
-
-          
 
 
 
-    ax.set_title("Deadlock Detection \n Step " + str(num + 1) + "/" + str(len(core.input_array)) + ": P" + str(currentProcess) + " " + core.verbalrequests[num] + "'s R" + str(currentResource), fontweight="bold")
+
+    ax.set_title("Deadlock Detection \n Step " + str(num + 1) + "/" + str(len(core.input_array)) +
+                 ": P" + str(currentProcess) + " " + core.verbalrequests[num] + "'s R" + str(
+                     currentResource) + extraInfo,
+             fontweight="bold")
+
+
+
    
     nx.draw(G,
             with_labels=True,
@@ -73,7 +86,7 @@ def update(num, G, ax, layout):
             node_shape="s",
             ax=ax)
    
-    #ax.set_title("Deadlock Detection \n Step {}/8: P0 requests and owns R0".format(num), fontweight="bold")
+    
 
 
 def simple_animation():

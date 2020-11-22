@@ -24,7 +24,7 @@ class Detection:
     requestType = []  # holds request type; "r" or "f"
     currentProcess = []  # hold value of current process
     currentResource = []  # hold value of current resource
-    stepsInProgram = []  # hold direction, P -> R or R -> P, in program
+   
 
     #deadlock
     V = []  # amount of each resource currently avaialble
@@ -47,7 +47,7 @@ class Detection:
     #-------------
     # Get num of processes
     numProcesses = int(input_array.pop(0).split(' ')[0])
-  
+    print(str(numProcesses) + " processes.")
 
     #Initialize num of process arrays
     #output P and owned RIDs
@@ -59,7 +59,7 @@ class Detection:
     #-------------
     # Get num of resources
     numResources = int(input_array.pop(0).split(' ')[0])
-
+    print(str(numResources) + " resources. ")
 
     #Bool if resource value is held by a P
     resourceHeld = [False] * numResources
@@ -89,14 +89,17 @@ class Detection:
     # Going Step by Step through input
     #-------------
     for i in range(len(input_array)):
-       
+        print("__________________________\n")
         #dramatic effect
         time.sleep(1)
-
+        #Tell step in program so far
+        print("Step " + str(i + 1) + "/" + str(len(input_array)))
         currentStep = input_array[i].split(" ")
         requestType = currentStep[0]  # "r" or "f"
         currentProcess = currentStep[1]  # PID
         currentResource = currentStep[2]  # RID
+
+        print(resourceHeld[int(currentResource)])
 
         #if process is requesting
         if (requestType == "r"):
@@ -105,31 +108,32 @@ class Detection:
             if (resourceHeld[int(currentResource)] == False):
                 #Since RID is free, PID owns it
                 allocationMatrix[int(currentStep[1])][int(currentStep[2])] = 1
-                verbalrequests.append("owns")
+
+                print("R" + currentResource + " owned by P" + currentProcess)
+                verbalrequests.append("owned")
                 #RID is now held
                 resourceHeld[int(currentResource)] = True
                 #add RID to PID's array
                 processHolder[int(currentProcess)].append(
                     "R" + str(currentResource))
-               
                 # R -> P
                 edges.append((f"R{currentResource}", f"P{currentProcess}"))
                 steps.append((f"R{currentResource}", f"P{currentProcess}"))
             else:
                 #Since RID is held by another process,
-                
-
+                print("P" + currentProcess + " requests R" + currentResource)
+                verbalrequests.append("requests")
                 # Put PID in resourceWanted array to request access to RID
                 resourceWanted[int(currentResource)].append(str(currentProcess))
                 #P -> R
-                verbalrequests.append("requests")
                 edges.append((f"P{currentProcess}", f"R{currentResource}"))
-                steps.append((f"P{currentProcess}", f"R{currentResource}"))
+                steps.append((f"R{currentResource}", f"P{currentProcess}"))
 
         #If process is freeing
         if (requestType == "f"):
             #P -x-> R
             #edges.remove("P" + currentProcess + ", R" + currentResource)
+            print("P" + currentProcess + " frees R" + currentResource)
             verbalrequests.append("frees")
             edges.remove((f"R{currentResource}", f"P{currentProcess}"))
             steps.append((f"R{currentResource}", f"P{currentProcess}"))
@@ -146,7 +150,8 @@ class Detection:
                 x = resourceWanted[int(currentResource)][1]
                 #Add RID to PID array
                 processHolder[int(x)].append("R" + str(currentResource))
-                verbalrequests.append("now owns")
+                print("R" + currentResource + " now owned by P" + x)
+                verbalrequests.append("noq owns")
                 edges.remove((f"P{x}", f"R{currentResource}"))
                 edges.append((f"R{currentResource}", f"P{x}"))
                 steps.append((f"R{currentResource}", f"P{x}"))
@@ -156,6 +161,27 @@ class Detection:
                 #RID is now held
                 resourceHeld[int(currentResource)] = True
 
+        #-------------
+        # current status of program
+        #-------------
+        print("_ _ _ _ _\n")
+        #print(edges)
+        print(steps)
+        print(verbalrequests)
+        print("_ _ _ _ _\n")
+        print("\n")
+        for i in range(numProcesses):
+            # PID's and held RID's
+            print(processHolder[i])
+
+        print("_ _ _ _ _\n")
+
+
+        for i in range(numResources):
+            #boolean if R is held or not
+            print("R" + str(i) + " held: " + str(resourceHeld[i]))
+            #list of PID's requesting RID
+            print(str(resourceWanted[i][1:]))
 
         #-------------
         # Detecting Cycles for a directed graph
@@ -165,10 +191,11 @@ class Detection:
         deadlock = (len(list(nx.simple_cycles(G))))
         if (int(deadlock) > 0):
 
+            print("_ _ _ _ _ _\n")
             print("There is deadlock!")
             print(list(nx.simple_cycles(G)))
-        
-           
+            print("\n_ _ _ _ _ _\n")
+            exit()
 
         #-------------
         # Predict Deadlock using Banker’s algorithm
@@ -195,3 +222,8 @@ class Detection:
                 if (N[i][y] > V[y]):
                     tally += 1
                     break
+
+        #if (tally == numProcesses):
+            #print("There will be deadlock!")
+            #exit()
+        #print(tally)
