@@ -10,7 +10,7 @@ ______________________________________________________________________________
 <img src="./images/token-ring-snapshot.png" width=450>
 
 
-_run in terminal with_: **./makeBFile**
+_run with terminal command_ **./makeBFile**
 ______________________________________________________________________________
 ####  Deadlock Detection project
 
@@ -31,7 +31,7 @@ ______________________________________________________________________________
 <br>
 
 
-__run in terminal with:__ **make** </br>
+_run with terminal command_ **make** </br>
 testing user inputs: </br>
 <img src="./images/deadlock_input.png" width=450> </br>
 _user input is the integer in the text file, ie if user types "1", then the animation will run with scenario-1.txt_
