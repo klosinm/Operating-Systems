@@ -1,9 +1,6 @@
 import networkx as nx
-import numpy as np
 import matplotlib.pyplot as plt
-import time
 from matplotlib import animation
-from matplotlib.widgets import Button, Slider
 
 
 from AnimationAssistant import Detection
@@ -28,8 +25,6 @@ class Animation:
         self.currentProcess = self.currentStep[1]  # PID
         self.currentResource = self.currentStep[2]  # RID
 
-        print("Deadlock: ")
-        print(core.deadlockSteps[num])
         self.point = core.steps[num][0]  # element pointing
         self.point2 = core.steps[num][1]  # element being pointed to
 
@@ -60,7 +55,6 @@ class Animation:
 
         #add edge colors
         for e in self.G.edges:
-            print(e)
             if (e[0][0] == "R"):
                 edge_color_map.append("lightsalmon")
             else:

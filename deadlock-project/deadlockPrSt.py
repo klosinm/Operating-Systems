@@ -32,10 +32,16 @@ class Detection:
     steps = []  # hold direction, P -> R or R -> P, in program
     verbalrequests = [] #requests, holds
     deadlock = 0  # holds #cycles detected
-    deadlockSteps = [] #holds if a cycle is detect
+    deadlockSteps = []  #holds if a cycle is detect
+    
+    
+    print("Please enter val of text file for simulation:\n")
+    input1 = input()
+    print(input1)
 
     # read in raw data into array
-    f = open("scenario-3.txt", "r")  # get file
+    #f = open("scenario-1.txt", "r")  # get file
+    f = open(f"scenario-{input1}.txt", "r")  # get file
     with f as my_file:
         initial_input_array = my_file.readlines()
 

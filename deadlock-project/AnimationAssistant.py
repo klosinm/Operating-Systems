@@ -7,6 +7,7 @@ import time
 import re
 import numpy
 import networkx as nx
+from os import path
 
 
 class Detection:
@@ -34,8 +35,19 @@ class Detection:
     deadlock = 0  # holds #cycles detected
     deadlockSteps = []  # holds if a cycle is detect
 
+    print("Please enter val of text file for simulation:")
+    userinput = input()
+    
+    simFile = f"scenario-{userinput}.txt"
+    if (path.exists(simFile) and userinput.isdigit() == True):
+        print("Enjoy the animation! Loading...")
+    else:
+        print("Oh no! Something went wrong. Please try with different credentials.")
+        quit()
+
+
     # read in raw data into array
-    f = open("scenario-2.txt", "r")  # get file
+    f = open(simFile, "r")  # get file
     with f as my_file:
         initial_input_array = my_file.readlines()
 
