@@ -6,9 +6,11 @@ Repo holds code from projects and activities.
 ______________________________________________________________________________
 
 #### token-ring project
+
 <img src="./images/token-ring-snapshot.png" width=450>
 
 
+[run in terminal with: ./makeBFile]
 ______________________________________________________________________________
 ####  Deadlock Detection project
 
@@ -28,6 +30,10 @@ ______________________________________________________________________________
 
 <br>
 
+
+[run in terminal with: make ]
+<img src="./images/deadlock_input.png" width=450>
+[i = the integer in the text file, scenario-{i}.txt]
 
 ______________________________________________________________________________
 
