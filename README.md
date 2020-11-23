@@ -4,27 +4,32 @@
 Repo holds code from projects and activities.
 
 ______________________________________________________________________________
-
-#### token-ring project
+### token-ring project
+Write a program that uses communicating multiple processes to emulate a form of network communication.
+</br>
 
 <img src="./images/token-ring-snapshot.png" width=450>
 
 
 _run in terminal with command_ **./makeBFile**
 ______________________________________________________________________________
-####  Deadlock Detection project
+###  Deadlock Detection project
+Develop a program that simulates an operating system functioning as a resource manager.
+</br>
 
-- simulation with test file scenario-1
+- simulation with file scenario-1.txt
 
 ![](deadlockdetection1.gif)
 
 <br>
-- simulation with test file scenario-2
+
+- simulation with file scenario-2.txt
 
 ![](deadlockdetection2.gif)
 
 <br>
-- simulation with test file scenario-3
+
+- simulation with file scenario-3.txt
 
 ![](deadlockdetection3.gif)
 
@@ -38,4 +43,4 @@ _user input is the integer in the text file, ie if user types "1", then the anim
 
 ______________________________________________________________________________
 
-Last Updated: Nov 22, 2020 </br>
+Last Updated: Nov 23, 2020 </br>
