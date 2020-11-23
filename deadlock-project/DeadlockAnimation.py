@@ -113,7 +113,7 @@ class Animation:
         self.layout = nx.circular_layout(self.G)
 
         self.ani = animation.FuncAnimation(
-            self.fig, self.update, frames=len(core.input_array), init_func=self.init, interval=2500, fargs=(self.G, self.ax, self.layout), repeat = False)
+            self.fig, self.update, frames=len(core.input_array), init_func=self.init, interval=1500, fargs=(self.G, self.ax, self.layout), repeat=False)
         #self.ani.save('deadlockdetection.gif', writer='PillowWriter', fps=.75)
         plt.show()
 
