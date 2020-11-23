@@ -1,3 +1,3 @@
 (run):
-	python3 deadlock.py
+	python3 DeadlockAnimation.py
 

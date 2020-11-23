@@ -30,11 +30,12 @@ class Detection:
     V = []  # amount of each resource currently avaialble
     edges = []  # edges holding which resource is pointing to what
     steps = []  # hold direction, P -> R or R -> P, in program
-    verbalrequests = []
+    verbalrequests = []  # requests, holds
     deadlock = 0  # holds #cycles detected
+    deadlockSteps = []  # holds if a cycle is detect
 
     # read in raw data into array
-    f = open("scenario-3.txt", "r")  # get file
+    f = open("scenario-2.txt", "r")  # get file
     with f as my_file:
         initial_input_array = my_file.readlines()
 
@@ -163,13 +164,12 @@ class Detection:
 
         G = nx.DiGraph(edges)
         deadlock = (len(list(nx.simple_cycles(G))))
-        if (int(deadlock) > 0):
+        deadlockSteps.append(deadlock)
+        #if (int(deadlock) > 0):
 
-            print("There is deadlock!")
-            print(list(nx.simple_cycles(G)))
+            #print("There is deadlock!")
+            #print(list(nx.simple_cycles(G)))
         
-           
-
         #-------------
         # Predict Deadlock using Banker’s algorithm
         #-------------
@@ -181,17 +181,4 @@ class Detection:
             else:
                 V[i] = 1
 
-        # amount of each resource needed by each process(P -> R)
-        C = claimMatrix
-        A = allocationMatrix  # amount of each resource held by each process
-        N = C - A  # resources Needed
-
-        tally = 0  # tally if Process can be run
-
-        #P > V True for ALL P, then deadlock
-        #if tally == num P, then ther will be deadlock
-        for i in range(numProcesses):
-            for y in range(numResources):
-                if (N[i][y] > V[y]):
-                    tally += 1
-                    break
+      

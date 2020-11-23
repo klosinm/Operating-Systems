@@ -30,8 +30,9 @@ class Detection:
     V = []  # amount of each resource currently avaialble
     edges = []  # edges holding which resource is pointing to what
     steps = []  # hold direction, P -> R or R -> P, in program
-    verbalrequests = []
+    verbalrequests = [] #requests, holds
     deadlock = 0  # holds #cycles detected
+    deadlockSteps = [] #holds if a cycle is detect
 
     # read in raw data into array
     f = open("scenario-3.txt", "r")  # get file
@@ -189,6 +190,9 @@ class Detection:
 
         G = nx.DiGraph(edges)
         deadlock = (len(list(nx.simple_cycles(G))))
+        deadlockSteps.append(deadlock)
+        print(deadlock)
+        print(deadlockSteps)
         if (int(deadlock) > 0):
 
             print("_ _ _ _ _ _\n")
