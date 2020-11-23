@@ -22,7 +22,6 @@ edge_color_map = []  # map edge colors to all edges
 shape_map = []  # map shapes to process and resource nodes (not working)
 extraInfo = 0  # append extra information to title, like "Deadlock!"
 
-
 class Animation:
     #---------------------------------------
     # METHOD update
@@ -30,16 +29,15 @@ class Animation:
     # num = step in program
     # G = graph
     # ax = allows us to change title of plt
-    # layout = state that G has circular layout
     #
     # - renders steps in program
     # - detects deadlock, displays deadlock 
     #   as last step in animation 
     #---------------------------------------
-    def update(self, num, G, ax, layout):
+    def update(self, num, G, ax):
         global extraInfo
         self.extraInfo = ""
-        #clear array each step to change edge colors
+        #clear color array each step to change edge colors
         edge_color_map = []
         ax.clear()
 
@@ -97,8 +95,7 @@ class Animation:
                     if (e[0] == T[0][i]):
                         edge_color_map[i] = "crimson"
             #Hault animation, since no more steps can occur
-            self.ani.event_source.stop()
-            
+            self.ani.event_source.stop()   
 
         #set title
         ax.set_title("Deadlock Detection \n Step " + str(num + 1) + "/" + str(len(core.input_array)) +
@@ -109,13 +106,12 @@ class Animation:
         #Draw graph
         nx.draw(G,
                 with_labels=True,
-                pos=layout,
+                pos=nx.circular_layout(self.G),
                 node_color=color_map,
                 edge_color=edge_color_map,
                 node_shape="s",
                 ax=ax)
 
-    
     #---------------------------------------
     # METHOD init
     # - created so step 0 doesn't print twice
@@ -146,12 +142,9 @@ class Animation:
             self.G.add_node("R" + str(i))
             color_map.append("lightsalmon")
 
-        #set up layout for graph
-        self.layout = nx.circular_layout(self.G)
-
         #animation!
         self.ani = animation.FuncAnimation(
-            self.fig, self.update, frames=len(core.input_array), init_func=self.init, interval=1500, fargs=(self.G, self.ax, self.layout), repeat=False)
+            self.fig, self.update, frames=len(core.input_array), init_func=self.init, interval=1500, fargs=(self.G, self.ax), repeat=False)
         #create gif,
         #comment out to make gif, keeping uncommented messes up the arrays and renders graph in plt.show incorrectly
         #self.ani.save('deadlockdetection.gif', writer='PillowWriter', fps=.75)

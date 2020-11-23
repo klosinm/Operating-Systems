@@ -140,7 +140,7 @@ class Detection:
                 x = resourceWanted[int(currentResource)][1]
                 #Add RID to PID array
                 processHolder[int(x)].append("R" + str(currentResource))
-                #P
+                #R -> P(new)
                 verbalrequests.append("now owns")
                 edges.remove((f"P{x}", f"R{currentResource}"))
                 edges.append((f"R{currentResource}", f"P{x}"))
@@ -154,7 +154,9 @@ class Detection:
         #-------------
         # Detecting Cycles
         #-------------
-
+        #Use a Dianamic graph to conenct edges formed so far in program
         G = nx.DiGraph(edges)
+        #if deadlock > 0, then there is a cycle in program
         deadlock = (len(list(nx.simple_cycles(G))))
+        #array of number of loops detected each step in program
         deadlockSteps.append(deadlock)
