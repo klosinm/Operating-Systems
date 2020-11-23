@@ -1,10 +1,9 @@
 # Operating-Systems
 
-### Repo for GVSU 452 Operating systems.
-Repo holds code from projects and activities.
+Repository that holds my code from projects and activities from my college course Operating Systems.
 
 ______________________________________________________________________________
-### token-ring project
+## Token-Ring Communication
 Write a program that uses communicating multiple processes to emulate a form of network communication.
 </br>
 
@@ -13,7 +12,7 @@ Write a program that uses communicating multiple processes to emulate a form of 
 
 _run in terminal with command_ **./makeBFile**
 ______________________________________________________________________________
-###  Deadlock Detection project
+##  Deadlock Detection/Resource Manager
 Develop a program that simulates an operating system functioning as a resource manager.
 </br>
 
