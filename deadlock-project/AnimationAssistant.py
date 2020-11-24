@@ -154,7 +154,7 @@ class Detection:
         #-------------
         # Detecting Cycles
         #-------------
-        #Use a Dianamic graph to conenct edges formed so far in program
+        #Use a Dianamic graph to conenct edges formed so far in
         G = nx.DiGraph(edges)
         #if deadlock > 0, then there is a cycle in program
         deadlock = (len(list(nx.simple_cycles(G))))

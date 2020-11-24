@@ -1,5 +1,6 @@
 #
 # Deadlock-Detection Resource Manager
+# Extra Credit
 # Monica Klosin
 # 11/12/2020
 #
@@ -10,8 +11,7 @@ import networkx as nx
 from os import path
 
 
-
-class Detection:
+class DetectAndRecover:
 
     my_file = []  # read in raw data
     initial_input_array = []  # read in raw data 2
@@ -88,36 +88,32 @@ class Detection:
         V.append([1])
 
     #-------------
-    # Deadlock *prediction* set up
+    # Deadlock detect and recover set up
     #-------------
+    pointName = [] #Holds whole name of node pointing
+    pointType = [] #Holds type of noding pointing, ie P or R
+    pointValue = [] #Holds value of node pointing, ie 0 or 1
 
-    claimMatrix = numpy.zeros((numProcesses, numResources))
-    allocationMatrix = numpy.zeros((numProcesses, numResources))
-    for i in range(len(input_array)):
-        currentStep = input_array[i].split(" ")
-        requestType = currentStep[0]  # "r" or "f"
-        currentProcess = int(currentStep[1])  # PID
-        currentResource = int(currentStep[2])  # RID
+    point2Name = [] #Holds whole name of node being pointed to
+    point2Type = []  #Holds type of node being pointed to, ie P or R
+    point2Value = []  #Holds value of node being pointed to, ie 0 or 1
 
-        if (requestType == "r"):
-            claimMatrix[currentProcess][currentResource] = 1
-        allocationMatrix[currentProcess][currentResource] = 0  # R -> P
 
     #-------------
     # Going Step by Step through input
     #-------------
+
     for i in range(len(input_array)):
         print("__________________________\n")
         #dramatic effect
         time.sleep(1)
         #Tell step in program so far
-        print("Step " + str(i + 1) + "/" + str(len(input_array)))
+        print("Step " + str(i+ 1) + "/" + str(len(input_array)))
+
         currentStep = input_array[i].split(" ")
         requestType = currentStep[0]  # "r" or "f"
         currentProcess = currentStep[1]  # PID
         currentResource = currentStep[2]  # RID
-
-        print(resourceHeld[int(currentResource)])
 
         #if process is requesting
         if (requestType == "r"):
@@ -125,8 +121,6 @@ class Detection:
             #check if RID is Held
             if (resourceHeld[int(currentResource)] == False):
                 #Since RID is free, PID owns it
-                allocationMatrix[int(currentStep[1])][int(currentStep[2])] = 1
-
                 print("R" + currentResource + " owned by P" + currentProcess)
                 verbalrequests.append("owned")
                 #RID is now held
@@ -169,7 +163,7 @@ class Detection:
                 #Add RID to PID array
                 processHolder[int(x)].append("R" + str(currentResource))
                 print("R" + currentResource + " now owned by P" + x)
-                verbalrequests.append("noq owns")
+                verbalrequests.append("now owns")
                 edges.remove((f"P{x}", f"R{currentResource}"))
                 edges.append((f"R{currentResource}", f"P{x}"))
                 steps.append((f"R{currentResource}", f"P{x}"))
@@ -195,103 +189,97 @@ class Detection:
             #list of PID's requesting RID
             print(str(resourceWanted[i][1:]))
 
+
+
         #-------------
         # Detecting Cycles for a directed graph
         #-------------
 
         G = nx.DiGraph(edges)
         deadlock = (len(list(nx.simple_cycles(G))))
-
         deadlockSteps.append(deadlock)
 
-        print(steps)
-        print(edges)
-      
-        
+        #Detect and Recover
         if (int(deadlock) > 0):
 
             print("_ _ _ _ _ _\n")
             print("There is deadlock!")
             print(list(nx.simple_cycles(G)))
-            print("\n_ _ _ _ _ _\n")
-            #exit()
+            print("_ _ _ _ _ _\n")
 
             T = list(nx.simple_cycles(G))
 
+            #dramatic effect
+            time.sleep(1)
 
+            #Loop through edges created and see which latest
+            #edge is in the cycle
             for i in range(len(edges)):
-                if (edges[i][0] == T[0][i]):
-            
-                    print("edge: ")
-                    print(edges[i])
-              
-                    print(edges)
-                    print(T[0][i])
-                
-                    G.remove_edge(edges[i][0], edges[i][1])
+                find = False #used to exit out of double for loop
+                for j in range(len(T[0])):
 
-                    #R0 frees P0
-                    print(edges[i][0] + " frees " + edges[i][1])
-                    
-                    edges.remove(edges[i])
+                    if (edges[i][0] == T[0][j]):
+                        #Node pointing
+                        pointName = edges[i][0]  
+                        pointType = edges[i][0][0]  
+                        pointValue = edges[i][0][1]  
+                        #Node being pointed too
+                        point2Name = edges[i][1]  
+                        point2Type = edges[i][1][0]  
+                        point2Value = edges[i][1][1]
+                         
+                        #remove edge from Graph cycle
+                        print("Kill request \"" + pointName + " " +
+                            verbalrequests[i] + " " + point2Name + "\"")
+                        G.remove_edge(pointName, point2Name)
+                        verbalrequests.append("frees")
 
-                
-                    
-                    steps.append(edges[i])
-                    print(edges)
-
-                    
-                    verbalrequests.append("frees")
-
-                    print(edges[i][0][0])
-                    print(edges[i][1][1])
-                    print(edges[i][0])
-
-                    if (edges[i][0][0] == "R"):
-                        resourceHeld[int(edges[i][0][1])] = False
-                        processHolder[int(edges[i][1][1])].remove(
-                            str(edges[i][0]))
+                        #If the node pointing is a resourse,
+                        #this means this resource is held, so we unhold it since
+                        #we killed this step
+                        if (pointType == "R"):
+                            resourceHeld[int(pointValue)] = False
+                            processHolder[int(point2Value)].remove( str(edges[i][0]))
 
                     
+                            #Check if any  other Process wanted this Resource
+                            if (len(resourceWanted[int(pointValue)]) > 1):
+                                x = resourceWanted[int(pointValue)][1]
+                                processHolder[int(x)].append("R" + str(pointValue))
+                                print("P" + x + " now owns " + pointName)
+
+                                #R -> P(new)
+                                verbalrequests.append("now owns")
+                                edges.remove((f"P{x}", f"R{pointValue}"))
+                                edges.append((f"R{pointValue}", f"P{x}"))
+                                steps.append((f"R{pointValue}", f"P{x}"))
+
+                                #Remove PID from resourceWanted array
+                                resourceWanted[int(pointValue)].remove(str(x))
+                                #RID is now held
+                                resourceHeld[int(pointValue)] = True
+
+                        #remove this edge from arrays
+                        edges.remove(edges[i])
+                        steps.append(edges[i])
+
+                        #append killed request to end of program
+                        if (pointType == "P"):
+                            #input_array.remove( "r " + pointName + " " + point2Name)
+                            input_array.append(("r " + pointName + " " + point2Name))
+                            print("Added " + pointName + " requests " + point2Name + " to end of program.") 
+                        elif (pointType == "R"):
+                            #input_array.remove( "r " + point2Value + " " + pointValue)
+                            input_array.append( "r " + point2Value + " " + pointValue)
+                            print("Added " + point2Name + " requests " + pointName + " to end of program.") 
+
+                 
+                        print("_ _ _ _ _ _\n")
+
+                        find = True     
+                        break
+
+                if find:
                     break
-                    
-                    
-              
-
-
-
-          
-
-
-        
-
-        #-------------
-        # Predict Deadlock using Banker’s algorithm
-        #-------------
-
-        #V: vector of amount of resources available for each R
-        for i in range(numResources):
-            if resourceHeld[i] == True:
-                V[i] = 0
-            else:
-                V[i] = 1
-
-        # amount of each resource needed by each process(P -> R)
-        C = claimMatrix
-        A = allocationMatrix  # amount of each resource held by each process
-        N = C - A  # resources Needed
-
-        tally = 0  # tally if Process can be run
-
-        #P > V True for ALL P, then deadlock
-        #if tally == num P, then ther will be deadlock
-        for i in range(numProcesses):
-            for y in range(numResources):
-                if (N[i][y] > V[y]):
-                    tally += 1
-                    break
-
-        #if (tally == numProcesses):
-            #print("There will be deadlock!")
-            #exit()
-        #print(tally)
+                
+    
