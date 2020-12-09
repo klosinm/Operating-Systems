@@ -106,14 +106,14 @@ class DetectAndRecover:
     # Going Step by Step through input
     #-------------
     Running = True #Help exit out of loop if deadlock occurs
-    blep = 0  #Honorary helper to get ouf ot while loop, blep
-    meep = 0 
+    blep = 0  #Honorary helper to get ouf of while loop, blep
+    meep = 0  #Honorary helper to get out of while loop, meep!
     while Running:
         for i in range(len(input_array)):
 
             print("__________________________\n")
 
-             #blep counts if cycle has been repeated
+            #blep counts if cycle has been repeated
             if ((i) == 0):
                 blep += 1
                 
@@ -307,7 +307,6 @@ class DetectAndRecover:
                     if find:
                         break
             
-       
             #For deadlock
             if(blep == 2):
                 break
