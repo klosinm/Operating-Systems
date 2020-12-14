@@ -12,21 +12,24 @@
 #include <errno.h>
 #include <string.h>
 #define MAX 75
+#define _XOPEN_SOURCE 700
 
 char **sortoutput(char *names[], int count);
+void compare(FILE *f1, FILE *f2);
 
 int main(int argc, char *argv[])
 {
     printf("\n");
     struct stat statPath;
     char **names = malloc(MAX * sizeof(char *));
+    int count = 0;
 
     for (int i = 0; i != MAX; i++)
     {
         names[i] = malloc(MAX * sizeof(char));
     }
 
-    int count = 0;
+ 
     if (argc < 3)
     {
         DIR *dirPtr;
@@ -67,6 +70,7 @@ int main(int argc, char *argv[])
             else
                 type = 0;
 
+            //print permissions
             printf((S_ISDIR(statPath.st_mode)) ? "d" : "-");
             printf((statPath.st_mode & S_IRUSR) ? "r" : "-");
             printf((statPath.st_mode & S_IWUSR) ? "w" : "-");
@@ -79,7 +83,7 @@ int main(int argc, char *argv[])
             printf((statPath.st_mode & S_IXOTH) ? "x" : "-");
             printf("     ");
 
-            //permission, type, owner, groups, size, creation time, name
+            //print type, owner, groups, size, creation time, name
             printf("%-4d %5luB  %-13s %s\n",
                    type,
                    statPath.st_size,
@@ -118,6 +122,12 @@ int main(int argc, char *argv[])
                date,
                argv[2]);
     }
+
+    printf("\n----------------------------------------------\n");
+  
+ 
+ 
+    return 0;
 }
 
 char **sortoutput(char *names[], int count)
@@ -137,3 +147,4 @@ char **sortoutput(char *names[], int count)
     }
     return names;
 }
+

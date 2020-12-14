@@ -1,0 +1,14 @@
+
+Permissions H.Links   Size  Last Modify   Name
+----------------------------------------------
+drwxr-xr-x     2      352B  Dec 13 12:42  .
+drwxr-xr-x     2      448B  Dec 13 12:40  ..
+-rw-r--r--     1       49B  Dec 08 21:03  Makefile
+-rwxr-xr-x     1    13312B  Dec 13 12:23  a.out
+-rw-r--r--     1        6B  Dec 08 14:36  apple.txt
+-rw-r--r--     1        3B  Dec 13 12:42  b.txt
+-rw-r--r--     1       23B  Dec 08 14:37  blueberry.txt
+-rw-r--r--     1        0B  Dec 13 12:42  compare.txt
+drwxr-xr-x     2       96B  Dec 08 21:16  folder
+-rw-r--r--     1     5190B  Dec 13 12:41  security.c
+-rw-r--r--     1      544B  Dec 13 12:41  temp.txt
